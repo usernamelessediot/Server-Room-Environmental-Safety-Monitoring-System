@@ -1,0 +1,192 @@
+#define BLYNK_TEMPLATE_ID "PASTE_YOUR_TEMPLATE_ID_HERE"
+#define BLYNK_TEMPLATE_NAME "Server Room Monitor"
+#define BLYNK_AUTH_TOKEN "PASTE_YOUR_AUTH_TOKEN_HERE"
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+
+#include <Wire.h>
+#include <DHTesp.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// ================= WIFI =================
+
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
+
+// ================= PINS =================
+
+#define DHT_PIN 15
+#define LED_PIN 2
+
+#define LDR_PIN 34
+#define GAS_PIN 35
+#define PIR_PIN 13
+
+// ================= DHT =================
+
+DHTesp dhtSensor;
+
+// ================= OLED =================
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// ================= TIMER =================
+
+BlynkTimer timer;
+
+// ===================================================
+// SEND SENSOR DATA
+// ===================================================
+
+void sendSensorData() {
+
+  // DHT22 readings
+  TempAndHumidity data = dhtSensor.getTempAndHumidity();
+
+  float temperature = data.temperature;
+  float humidity = data.humidity;
+
+  // Other sensors
+  int lightValue = analogRead(LDR_PIN);
+
+  int gasValue = analogRead(GAS_PIN);
+
+  int motion = digitalRead(PIR_PIN);
+
+  // ================= STATUS =================
+
+  String statusText;
+
+  if (temperature > 35 || gasValue > 2000) {
+
+    statusText = "ALERT";
+
+    digitalWrite(LED_PIN, HIGH);
+
+  } else {
+
+    statusText = "NORMAL";
+
+    digitalWrite(LED_PIN, LOW);
+  }
+
+  // ================= SERIAL MONITOR =================
+
+  Serial.println("====== SERVER ROOM DATA ======");
+
+  Serial.println("Temperature: " + String(temperature));
+
+  Serial.println("Humidity: " + String(humidity));
+
+  Serial.println("Light: " + String(lightValue));
+
+  Serial.println("Gas: " + String(gasValue));
+
+  Serial.println("Motion: " + String(motion));
+
+  Serial.println("Status: " + statusText);
+
+  Serial.println("==============================");
+
+  // ================= SEND TO BLYNK =================
+
+  Blynk.virtualWrite(V0, temperature);
+
+  Blynk.virtualWrite(V1, humidity);
+
+  Blynk.virtualWrite(V2, lightValue);
+
+  Blynk.virtualWrite(V3, gasValue);
+
+  Blynk.virtualWrite(V4, motion);
+
+  Blynk.virtualWrite(V5, statusText);
+
+  // ================= OLED DISPLAY =================
+
+  display.clearDisplay();
+
+  display.setCursor(0, 0);
+  display.println("SERVER ROOM");
+
+  display.setCursor(0, 12);
+  display.print("Temp: ");
+  display.print(temperature);
+  display.println(" C");
+
+  display.setCursor(0, 24);
+  display.print("Hum : ");
+  display.print(humidity);
+  display.println(" %");
+
+  display.setCursor(0, 36);
+
+  if (motion == 1) {
+
+    display.println("Motion: YES");
+
+  } else {
+
+    display.println("Motion: NO");
+  }
+
+  display.setCursor(0, 48);
+  display.print("Status: ");
+  display.println(statusText);
+
+  display.display();
+}
+
+// ===================================================
+// SETUP
+// ===================================================
+
+void setup() {
+
+  Serial.begin(115200);
+
+  // LED
+  pinMode(LED_PIN, OUTPUT);
+
+  // PIR
+  pinMode(PIR_PIN, INPUT);
+
+  // DHT22
+  dhtSensor.setup(DHT_PIN, DHTesp::DHT22);
+
+  // OLED
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+
+    Serial.println("OLED Failed");
+
+    while (true);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+
+  // ================= BLYNK =================
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  // Send sensor data every 2 seconds
+  timer.setInterval(2000L, sendSensorData);
+}
+
+// ===================================================
+// LOOP
+// ===================================================
+
+void loop() {
+
+  Blynk.run();
+
+  timer.run();
+}
