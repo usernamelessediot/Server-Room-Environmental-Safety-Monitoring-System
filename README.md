@@ -5,10 +5,10 @@ Designed for small server rooms and electronics labs where dedicated infrastruct
 # Architecture 
 <img width="878" height="621" alt="image" src="https://github.com/user-attachments/assets/3bd9d762-ef8e-43e5-8994-e1c75216b428" />
 
-# Simulation 
+# Simulation in Wowki
 <img width="957" height="662" alt="Screenshot 2026-05-01 213134" src="https://github.com/user-attachments/assets/b32e7022-dcd4-49f4-bb07-0478c0f28f06" />
 
-# HiveMq
+# MQTT Broker 
 <img width="1519" height="927" alt="Screenshot 2026-05-01 211613" src="https://github.com/user-attachments/assets/c1bd19b2-c6cb-4033-b62f-11a00833845d" />
 
 # Dashboard
