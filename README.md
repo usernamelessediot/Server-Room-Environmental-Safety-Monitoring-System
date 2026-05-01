@@ -1,4 +1,4 @@
-<img width="1519" height="927" alt="Screenshot 2026-05-01 211613" src="https://github.com/user-attachments/assets/510e080f-9b0a-4df4-a163-213d2a804022" /># Server-Room-Environmental-Safety-Monitoring-System
+# Server-Room-Environmental-Safety-Monitoring-System
 This project is a WiFi-enabled IoT monitoring node that continuously tracks environmental conditions inside a server room — temperature, humidity, smoke levels, motion, and ambient light — and streams live telemetry to a cloud dashboard with automated alerting.
 Designed for small server rooms and electronics labs where dedicated infrastructure monitoring isn't feasible
 
